@@ -56,13 +56,24 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check
+// Health check - MUST come before other routes
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    database: process.env.DATABASE_URL ? 'Connected' : 'Not configured'
+    database: process.env.DATABASE_URL ? 'Connected' : 'Not configured',
+    cors: 'Enabled',
+    version: '1.0.0'
+  });
+});
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: 'Test endpoint working',
+    timestamp: new Date().toISOString(),
+    status: 'OK'
   });
 });
 
