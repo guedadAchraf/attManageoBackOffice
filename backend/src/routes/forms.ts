@@ -2,7 +2,7 @@ import express from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
 import { CreateFormRequest } from '../../../shared/types';
-import { generateOrUpdateExcelFile } from '../services/excelService.minimal';
+import { generateOrUpdateExcelFile } from '../services/excelService.vercel';
 
 const router = express.Router();
 
