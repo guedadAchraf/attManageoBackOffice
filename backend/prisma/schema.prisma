@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdForms    Form[]           @relation("FormCreator")
+  formSubmissions FormSubmission[]
+  excelFiles      ExcelFile[]
+
+  @@map("users")
+}
+
+model Form {
+  id        Int      @id @default(autoincrement())
+  name      String
+  creatorId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  creator     User             @relation("FormCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  fields      FormField[]
+  submissions FormSubmission[]
+  excelFiles  ExcelFile[]      // Relation avec les fichiers Excel
+
+  @@map("forms")
+}
+
+model FormField {
+  id       Int       @id @default(autoincrement())
+  formId   Int
+  type     FieldType
+  label    String
+  order    Int
+  required Boolean   @default(false)
+
+  // Relations
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("form_fields")
+}
+
+model FormSubmission {
+  id          Int      @id @default(autoincrement())
+  formId      Int
+  submitterId Int
+  data        Json
+  createdAt   DateTime @default(now())
+
+  // Relations
+  form      Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
+  submitter User        @relation(fields: [submitterId], references: [id], onDelete: Cascade)
+
+  @@map("form_submissions")
+}
+
+model ExcelFile {
+  id               Int    @id @default(autoincrement())
+  fileName         String
+  filePath         String
+  ownerId          Int
+  formId           Int    // Lié au formulaire plutôt qu'à une soumission spécifique
+  version          Int    @default(1) // Version du fichier Excel
+  submissionsCount Int    @default(0) // Nombre de soumissions dans ce fichier
+  createdAt        DateTime @default(now())
+
+  // Relations
+  owner          User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  form           Form           @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("excel_files")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum FieldType {
+  text
+  textarea
+}

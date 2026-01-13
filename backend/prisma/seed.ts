@@ -1,0 +1,73 @@
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+
+const prisma = new PrismaClient()
+
+async function main() {
+  console.log('🌱 Début du seeding...')
+
+  // Créer un utilisateur admin par défaut
+  const adminEmail = 'admin@att-forms.com'
+  const adminPassword = 'admin123'
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail }
+  })
+
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash(adminPassword, 12)
+    
+    const admin = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'ADMIN'
+      }
+    })
+
+    console.log('✅ Utilisateur admin créé:')
+    console.log(`   Email: ${admin.email}`)
+    console.log(`   Mot de passe: ${adminPassword}`)
+    console.log(`   Rôle: ${admin.role}`)
+  } else {
+    console.log('ℹ️  Utilisateur admin existe déjà')
+  }
+
+  // Créer un utilisateur normal par défaut
+  const userEmail = 'user@att-forms.com'
+  const userPassword = 'user123'
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: userEmail }
+  })
+
+  if (!existingUser) {
+    const hashedPassword = await bcrypt.hash(userPassword, 12)
+    
+    const user = await prisma.user.create({
+      data: {
+        email: userEmail,
+        password: hashedPassword,
+        role: 'USER'
+      }
+    })
+
+    console.log('✅ Utilisateur normal créé:')
+    console.log(`   Email: ${user.email}`)
+    console.log(`   Mot de passe: ${userPassword}`)
+    console.log(`   Rôle: ${user.role}`)
+  } else {
+    console.log('ℹ️  Utilisateur normal existe déjà')
+  }
+
+  console.log('🎉 Seeding terminé!')
+}
+
+main()
+  .catch((e) => {
+    console.error('❌ Erreur lors du seeding:', e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
