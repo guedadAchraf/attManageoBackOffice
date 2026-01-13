@@ -38,36 +38,40 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/forms', formRoutes);
-app.use('/api/excel', excelRoutes);
-app.use('/api/test', testRoutes);
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'ATT Forms API is running',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      forms: '/api/forms',
+      excel: '/api/excel',
+      test: '/api/test'
+    }
+  });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: process.env.DATABASE_URL ? 'Connected' : 'Not configured'
   });
 });
 
-// Root route
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'ATT Forms API is running',
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      forms: '/api/forms',
-      excel: '/api/excel'
-    }
-  });
-});
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/forms', formRoutes);
+app.use('/api/excel', excelRoutes);
+app.use('/api/test', testRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -77,7 +81,16 @@ app.use('*', (req, res) => {
   res.status(404).json({ 
     error: 'Route not found',
     path: req.originalUrl,
-    method: req.method
+    method: req.method,
+    availableRoutes: [
+      '/',
+      '/api/health',
+      '/api/auth/*',
+      '/api/users/*',
+      '/api/forms/*',
+      '/api/excel/*',
+      '/api/test/*'
+    ]
   });
 });
 

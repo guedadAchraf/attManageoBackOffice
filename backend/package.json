@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc && npx prisma generate",
+    "build": "npx prisma generate && tsc",
     "start": "node dist/server.js",
     "vercel-build": "npx prisma generate && npx prisma db push",
     "db:migrate": "npx prisma migrate dev",
